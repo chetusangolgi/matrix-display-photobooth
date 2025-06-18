@@ -13,35 +13,40 @@ body {
   grid-template-rows: repeat(3, 480px);
   gap: 0;
   padding: 0;
-  perspective: 1000px;
 }
 
 .block {
   width: 640px;
   height: 480px;
-  transform-style: preserve-3d;
-  transition: transform 1.5s cubic-bezier(0.4, 0.0, 0.2, 1);
   position: relative;
-}
-
-.block.flipped {
-  transform: rotateY(180deg);
 }
 
 .block .face {
   width: 100%;
   height: 100%;
-  backface-visibility: hidden;
   position: absolute;
   top: 0;
   left: 0;
   object-fit: cover;
+  transition: opacity 1.5s ease-in-out;
 }
 
 .front {
   z-index: 2;
 }
 
-.back {
-  transform: rotateY(180deg);
+/* By default, the front face is visible */
+.block .front {
+  opacity: 1;
+}
+.block .back {
+  opacity: 0;
+}
+
+/* When flipped, fade out the front and fade in the back */
+.block.flipped .front {
+  opacity: 0;
+}
+.block.flipped .back {
+  opacity: 1;
 }
