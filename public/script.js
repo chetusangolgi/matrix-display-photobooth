@@ -99,3 +99,18 @@ function updateImage(imageElement, imgName) {
     }, 800);
   };
 }
+
+function sequentialFlip() {
+  let i = 0;
+  function flipNext() {
+    if (i >= 16) return;
+    blocks[i].element.classList.toggle('flipped');
+    i++;
+    setTimeout(flipNext, 80); // Adjust speed as needed
+  }
+  flipNext();
+}
+
+// Call sequentialFlip() whenever you want to trigger the effect
+// For example, replace your setInterval flip logic with:
+// sequentialFlip();

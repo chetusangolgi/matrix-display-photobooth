@@ -19,6 +19,7 @@ body {
   width: 640px;
   height: 480px;
   position: relative;
+  perspective: 1200px; /* Add perspective for 3D effect */
 }
 
 .block .face {
@@ -28,25 +29,21 @@ body {
   top: 0;
   left: 0;
   object-fit: cover;
-  transition: opacity 1.5s ease-in-out;
+  backface-visibility: hidden; /* Hide back when not facing viewer */
+  transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.front {
-  z-index: 2;
-}
-
-/* By default, the front face is visible */
 .block .front {
-  opacity: 1;
+  z-index: 2;
+  transform: rotateY(0deg);
 }
 .block .back {
-  opacity: 0;
+  transform: rotateY(180deg);
 }
 
-/* When flipped, fade out the front and fade in the back */
 .block.flipped .front {
-  opacity: 0;
+  transform: rotateY(-180deg);
 }
 .block.flipped .back {
-  opacity: 1;
+  transform: rotateY(0deg);
 }
