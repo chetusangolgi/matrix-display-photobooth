@@ -13,13 +13,14 @@ body {
   grid-template-rows: repeat(3, 480px);
   gap: 0;
   padding: 0;
+  perspective: 1200px; /* Add perspective for 3D effect to the grid */
 }
 
 .block {
   width: 640px;
   height: 480px;
   position: relative;
-  perspective: 1200px; /* Add perspective for 3D effect */
+  /* Remove perspective from here */
 }
 
 .block .face {
@@ -30,7 +31,7 @@ body {
   left: 0;
   object-fit: cover;
   backface-visibility: hidden; /* Hide back when not facing viewer */
-  transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1); /* Ensure transform is transitioned */
 }
 
 .block .front {

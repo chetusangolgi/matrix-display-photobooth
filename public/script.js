@@ -32,11 +32,19 @@ for (let i = 0; i < TOTAL_BLOCKS; i++) {
 }
 
 // Flip all blocks continuously
+// setInterval(() => {
+//   currentFlipState = !currentFlipState;
+//   blocks.forEach((block) => {
+//     block.element.classList.toggle('flipped', currentFlipState);
+//   });
+// }, FLIP_INTERVAL);
+
+// Call sequentialFlip to start the one-by-one animation
+// sequentialFlip(); // Remove this line as it will be called by setInterval
+
+// Reintroduce setInterval to call sequentialFlip every FLIP_INTERVAL (3 seconds)
 setInterval(() => {
-  currentFlipState = !currentFlipState;
-  blocks.forEach((block) => {
-    block.element.classList.toggle('flipped', currentFlipState);
-  });
+  sequentialFlip();
 }, FLIP_INTERVAL);
 
 // WebSocket connection
@@ -103,14 +111,11 @@ function updateImage(imageElement, imgName) {
 function sequentialFlip() {
   let i = 0;
   function flipNext() {
-    if (i >= 16) return;
+    // Change the condition to include all blocks (0 to 17)
+    if (i >= TOTAL_BLOCKS) return;
     blocks[i].element.classList.toggle('flipped');
     i++;
     setTimeout(flipNext, 80); // Adjust speed as needed
   }
   flipNext();
 }
-
-// Call sequentialFlip() whenever you want to trigger the effect
-// For example, replace your setInterval flip logic with:
-// sequentialFlip();
