@@ -9,6 +9,7 @@ const grid = document.getElementById('image-grid');
 const blocks = [];
 let currentFlipState = false;
 const activeBlockMap = new Map(); // { blockIndex: imageName }
+const activeBlockQueue = []; // [blockIndex] - Oldest is at the start
 
 // Create grid
 for (let i = 0; i < TOTAL_BLOCKS; i++) {
@@ -30,13 +31,11 @@ for (let i = 0; i < TOTAL_BLOCKS; i++) {
   blocks.push({ element: block, front, back });
 }
 
-// Flip between default images
+// Flip all blocks continuously
 setInterval(() => {
   currentFlipState = !currentFlipState;
-  blocks.forEach((block, index) => {
-    if (!activeBlockMap.has(index)) {
-      block.element.classList.toggle('flipped', currentFlipState);
-    }
+  blocks.forEach((block) => {
+    block.element.classList.toggle('flipped', currentFlipState);
   });
 }, FLIP_INTERVAL);
 
@@ -52,42 +51,51 @@ socket.onmessage = (event) => {
 
 function injectNewImages(images) {
   images.forEach((imgName) => {
-    if (activeBlockMap.size < MAX_ACTIVE_IMAGES) {
-      assignImageToFreeBlock(imgName);
-    } else {
-      replaceRandomActiveImage(imgName);
+    if (activeBlockQueue.length >= MAX_ACTIVE_IMAGES) {
+      const oldestBlockIndex = activeBlockQueue.shift(); // Dequeue oldest
+      deactivateBlock(oldestBlockIndex);
     }
+    assignImageToFreeBlock(imgName);
   });
 }
 
 function assignImageToFreeBlock(imgName) {
   const freeIndexes = blocks.map((_, i) => i).filter(i => !activeBlockMap.has(i));
-  if (freeIndexes.length === 0) return;
+  if (freeIndexes.length === 0) {
+    console.warn("No free blocks available to assign new image.");
+    return;
+  }
 
-  const target = freeIndexes[Math.floor(Math.random() * freeIndexes.length)];
-  showImageInBlock(target, imgName);
-}
-
-function replaceRandomActiveImage(imgName) {
-  const activeIndexes = Array.from(activeBlockMap.keys());
-  const target = activeIndexes[Math.floor(Math.random() * activeIndexes.length)];
-  showImageInBlock(target, imgName);
+  const targetIndex = freeIndexes[Math.floor(Math.random() * freeIndexes.length)];
+  showImageInBlock(targetIndex, imgName);
 }
 
 function showImageInBlock(index, imgName) {
   const block = blocks[index];
-  const face = currentFlipState ? block.front : block.back;
-  const unique = `${Date.now()}-${Math.random()}`;
-  face.src = `${imageFolder}${imgName}?t=${unique}`;
+  updateImage(block.back, imgName); // Set the new image on the back
 
-  // Fallback if image load fails
-  face.onerror = () => {
+  // Mark as active. The main interval will handle the flipping.
+  activeBlockMap.set(index, imgName);
+  activeBlockQueue.push(index);
+}
+
+function deactivateBlock(index) {
+  if (!activeBlockMap.has(index)) return;
+
+  activeBlockMap.delete(index);
+  // Immediately reset the back face to the default image.
+  // The main interval will handle flipping it out of view.
+  blocks[index].back.src = `${imageFolder}${defaultBack}`;
+}
+
+function updateImage(imageElement, imgName) {
+  const uniqueSrc = `${imageFolder}${imgName}?t=${Date.now()}-${Math.random()}`;
+  imageElement.src = uniqueSrc;
+
+  imageElement.onerror = () => {
     console.warn('❌ Image failed to load:', imgName, 'Retrying...');
     setTimeout(() => {
-      face.src = `${imageFolder}${imgName}?t=${Date.now()}-${Math.random()}`;
+      imageElement.src = `${imageFolder}${imgName}?t=${Date.now()}-${Math.random()}`;
     }, 800);
   };
-
-  block.element.classList.remove('flipped');
-  activeBlockMap.set(index, imgName);
 }
